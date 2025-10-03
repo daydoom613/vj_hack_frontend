@@ -165,12 +165,15 @@ const Reports = () => {
   ];
 
   const features = [
-    { name: "N (Nitrogen)", importance: 0.25, description: "Essential for vegetative growth" },
-    { name: "P (Phosphorus)", importance: 0.22, description: "Root development and flowering" },
-    { name: "K (Potassium)", importance: 0.18, description: "Fruit quality and stress resistance" },
-    { name: "Temperature", importance: 0.15, description: "Crop growth rate and metabolism" },
-    { name: "Humidity", importance: 0.12, description: "Water stress and disease risk" },
-    { name: "pH", importance: 0.08, description: "Nutrient availability" }
+    { name: "N (Nitrogen)", score: 599, description: "Essential for vegetative growth" },
+    { name: "P (Phosphorus)", score: 572, description: "Root development and flowering" },
+    { name: "K (Potassium)", score: 318, description: "Fruit quality and stress resistance" },
+    { name: "rainfall", score: 132, description: "Rainfall impact" },
+    { name: "moisture", score: 130, description: "Soil moisture level" },
+    { name: "humidity", score: 90, description: "Water stress and disease risk" },
+    { name: "temperature", score: 61, description: "Crop growth rate and metabolism" },
+    { name: "pH", score: 60, description: "Nutrient availability" },
+    { name: "crop", score: 16, description: "Crop category encoding" }
   ];
 
   const preprocessingSteps = [
@@ -205,9 +208,9 @@ const Reports = () => {
 
   const technicalStack = [
     { category: "Backend", items: ["Python", "FastAPI", "XGBoost", "Scikit-learn", "Pandas", "NumPy"] },
-    { category: "Frontend", items: ["React", "TypeScript", "Tailwind CSS", "shadcn/ui", "Vite"] },
+    { category: "Frontend", items: ["HTML", "Tailwind CSS", "JavaScript"] },
     { category: "ML Pipeline", items: ["Label Encoding", "Standard Scaling", "Feature Engineering", "Model Training"] },
-    { category: "Deployment", items: ["REST API", "CORS", "Error Handling", "Model Persistence"] }
+    { category: "Deployment", items: ["Railway (API)", "Netlify (Web)"] }
   ];
 
   return (
@@ -380,6 +383,23 @@ const Reports = () => {
                               </div>
                             )}
                             
+                            {step.step === 2 && (
+                              <div>
+                                <h4 className="text-xs font-semibold text-foreground mb-2">Download Processing Notebook:</h4>
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => handleDownload("notebook.ipynb")}
+                                  className="flex items-center gap-2 h-10 px-4"
+                                  size="sm"
+                                >
+                                  <Download className="h-4 w-4" />
+                                  <div className="text-left">
+                                    <div className="text-sm font-medium">Data Processing Notebook (.ipynb)</div>
+                                  </div>
+                                </Button>
+                              </div>
+                            )}
+
                             {step.step === 6 && (
                               <div>
                                 <h4 className="text-xs font-semibold text-foreground mb-2">Download Final Dataset:</h4>
@@ -492,28 +512,28 @@ const Reports = () => {
                     </div>
                   </div>
 
-                  <div className="p-6 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200">
+                  <div className="p-6 rounded-lg bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200">
                     <div className="flex items-center gap-3 mb-3">
-                      <Zap className="h-6 w-6 text-purple-600" />
-                      <h4 className="text-lg font-semibold text-purple-800">Selected Model: XGBoost</h4>
+                      <Zap className="h-6 w-6 text-emerald-600" />
+                      <h4 className="text-lg font-semibold text-emerald-800">Selected Model: XGBoost</h4>
                     </div>
-                    <p className="text-purple-700 mb-4">
+                    <p className="text-emerald-700 mb-4">
                       XGBoost achieved the highest test accuracy of <strong>99.09%</strong> with excellent 
                       performance across all metrics. It showed the best balance of accuracy, 
                       generalization, and computational efficiency.
                     </p>
                     <div className="grid md:grid-cols-3 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">99.09%</div>
-                        <div className="text-sm text-purple-700">Test Accuracy</div>
+                        <div className="text-2xl font-bold text-emerald-600">99.09%</div>
+                        <div className="text-sm text-emerald-700">Test Accuracy</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">98.79%</div>
-                        <div className="text-sm text-purple-700">Validation Accuracy</div>
+                        <div className="text-2xl font-bold text-emerald-600">98.79%</div>
+                        <div className="text-sm text-emerald-700">Validation Accuracy</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">100%</div>
-                        <div className="text-sm text-purple-700">Training Accuracy</div>
+                        <div className="text-2xl font-bold text-emerald-600">100%</div>
+                        <div className="text-sm text-emerald-700">Training Accuracy</div>
                       </div>
                     </div>
                   </div>
@@ -521,24 +541,29 @@ const Reports = () => {
                   <div>
                     <h4 className="font-semibold text-lg mb-4">Feature Importance Analysis</h4>
                     <div className="space-y-3">
-                      {features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center gap-4">
-                          <div className="w-32 text-sm font-medium">{feature.name}</div>
-                          <div className="flex-1 bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all duration-500"
-                              style={{ width: `${feature.importance * 100}%` }}
-                            />
-                          </div>
-                          <div className="w-16 text-sm text-muted-foreground text-right">
-                            {(feature.importance * 100).toFixed(0)}%
-                          </div>
-                        </div>
-                      ))}
+                      {(() => {
+                        const totalScore = features.reduce((sum, f) => sum + f.score, 0);
+                        return features.map((feature, idx) => {
+                          const pct = (feature.score / totalScore) * 100;
+                          return (
+                            <div key={idx} className="flex items-center gap-4">
+                              <div className="w-40 text-sm font-medium">{feature.name}</div>
+                              <div className="flex-1 bg-muted rounded-full h-2">
+                                <div
+                                  className="bg-emerald-600 h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <div className="w-20 text-sm text-muted-foreground text-right">
+                                {pct.toFixed(1)}%
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                     <p className="text-sm text-muted-foreground mt-3">
-                      Nitrogen (N), Phosphorus (P), and Potassium (K) are the most important features, 
-                      which aligns with agricultural science principles.
+                      Nitrogen (N), Phosphorus (P), and Potassium (K) dominate importance by percentage, matching the uploaded chart.
                     </p>
                   </div>
                 </div>
@@ -575,31 +600,46 @@ const Reports = () => {
                     ))}
                   </div>
 
-                  <div className="p-6 rounded-lg bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200">
-                    <h4 className="font-semibold text-lg mb-4 text-blue-800">Data Flow Pipeline</h4>
+                  <div className="p-6 rounded-lg bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200">
+                    <h4 className="font-semibold text-lg mb-4 text-emerald-800">Data Flow Pipeline</h4>
                     <div className="flex flex-wrap items-center gap-4 text-sm">
                       <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
-                        <Database className="h-4 w-4 text-blue-600" />
+                        <Database className="h-4 w-4 text-emerald-700" />
                         Raw Data
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
-                        <Settings className="h-4 w-4 text-green-600" />
+                        <Settings className="h-4 w-4 text-green-700" />
                         Preprocessing
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
-                        <Brain className="h-4 w-4 text-purple-600" />
+                        <Brain className="h-4 w-4 text-emerald-700" />
                         Model Training
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
-                        <Code className="h-4 w-4 text-orange-600" />
+                        <Code className="h-4 w-4 text-emerald-700" />
                         API Development
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
-                        <Globe className="h-4 w-4 text-indigo-600" />
+                        <Code className="h-4 w-4 text-teal-700" />
+                        Frontend Development
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
+                        <Cloud className="h-4 w-4 text-emerald-700" />
+                        Deploy ML Model
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
+                        <Cloud className="h-4 w-4 text-green-700" />
+                        Deploy Website
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 px-3 py-2 bg-white rounded border">
+                        <Globe className="h-4 w-4 text-emerald-700" />
                         Web Interface
                       </div>
                     </div>
@@ -626,31 +666,31 @@ const Reports = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+              <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50">
                 <CardHeader>
-                  <CardTitle className="text-blue-800 flex items-center gap-2">
+                  <CardTitle className="text-emerald-800 flex items-center gap-2">
                     <Users className="h-5 w-5" />
                     User Experience
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-blue-600 mb-2">Intuitive</div>
-                  <p className="text-blue-700 text-sm">Clean Interface</p>
-                  <p className="text-blue-600 text-xs mt-2">Real-time predictions</p>
+                  <div className="text-3xl font-bold text-emerald-600 mb-2">Intuitive</div>
+                  <p className="text-emerald-700 text-sm">Clean Interface</p>
+                  <p className="text-emerald-600 text-xs mt-2">Real-time predictions</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50">
+              <Card className="border-green-200 bg-gradient-to-br from-green-50 to-lime-50">
                 <CardHeader>
-                  <CardTitle className="text-purple-800 flex items-center gap-2">
+                  <CardTitle className="text-green-800 flex items-center gap-2">
                     <Shield className="h-5 w-5" />
                     Sustainability
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-purple-600 mb-2">Eco-Friendly</div>
-                  <p className="text-purple-700 text-sm">Reduced Waste</p>
-                  <p className="text-purple-600 text-xs mt-2">Optimized fertilizer use</p>
+                  <div className="text-3xl font-bold text-green-600 mb-2">Eco-Friendly</div>
+                  <p className="text-green-700 text-sm">Reduced Waste</p>
+                  <p className="text-green-600 text-xs mt-2">Optimized fertilizer use</p>
                 </CardContent>
               </Card>
             </div>
